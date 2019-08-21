@@ -1,0 +1,7 @@
+.ipynb_checkpoints
+.vscode
+pythoncodetest
+*.xlsx
+*.docx
+*.csv
+test.py.txt
