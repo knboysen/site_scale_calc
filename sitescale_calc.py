@@ -75,12 +75,17 @@ my_dict= OrderedDict([
     ])
 
 def score_match(hab_value, var_name):
-    round_hab_value = round(hab_value) #rounds to nearest integer
-    row = scores.loc[round_hab_value]
-    return row[var_name]
+    """
+    Looks up a score from the 'scores' dataframe for the measure of any 
+    habitat attribute (e.g., 35 percent cover of forb_cover). 
+    :param hab_value: measure of the habitat attribute from 0 to 100
+    :param var_name: name of the habitat attribute, must correspond to column
+    name in site_data dataframe.
+    """
+    return scores.loc[round(hab_value), var_name]
 
 for score, value in my_dict.items():
-    site_data[score] = site_data.apply(lambda x:score_match(x[value], score), 
+    site_data[score] = site_data.apply(lambda df:score_match(df[value], score), 
     axis =1)
 
 
