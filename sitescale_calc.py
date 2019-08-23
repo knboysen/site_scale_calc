@@ -185,7 +185,30 @@ for score, value in my_dict.items():
 ##################
 ### combine data
 
-##Summer/Migration Score
+##Add Weights
+
+
+
+weights= pd.read_excel('site_calc_weights.xlsx')
+
+for i in weights():
+    weights["veg_attribute"]= weights["weight"]
+
+# weight_dict = weights.to_dict('series')
+
+# x = {}
+# for i in weights['veg_attribute'].unique:
+#     x[i] = weights['weight']
+
+#  for key in weight_dict.keys():
+#      value= weight_dict[key]
+#      print(key, "=", value)
+
+
+for row in weights.itertuples():
+    x = weights['veg_attribute']
+    veg_attribute 
+
 def sum_migration_func(shrub,forb, dforb):
     s_m_score = shrub * 0.5 + forb * 0.25 + dforb * 0.25
     return s_m_score
