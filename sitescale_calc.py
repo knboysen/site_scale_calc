@@ -133,10 +133,11 @@ def winter_func(shrub, dshrub):
     :return the combined winter score
     """
     
-    w_score= shrub * weight_dict['win_shrub_wt'] + dshrub * weight_dict['win_des_shrub_wt']
+    w_score = shrub * weight_dict['win_shrub_wt'] + dshrub * weight_dict['win_des_shrub_wt']
     return w_score
 
 ##add site functionality to data frame
+## KB KEEP WORKING HERE- these aren't working
 
 site_data['s_func']= site_data.apply(lambda x:sum_func(x.shrub_cover_score, x.forb_cover_score, x.d_forb_score), axis= 1)
 
