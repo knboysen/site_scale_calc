@@ -88,143 +88,63 @@ for score, value in my_dict.items():
     site_data[score] = site_data.apply(lambda df:score_match(df[value], score), 
     axis =1)
 
+########
+#Add Weights
+#Read in Table of Vegetation Weights
+weights_df= pd.read_excel('site_calc_weights.xlsx')
+
+#Convert to Dictionary
+weight_dict = dict(zip(weights_df['veg_attribute'], weights_df['weight']))
 
 
+def sum_func(shrub,forb, dforb):
 
-#site_data['forb_cover_score']= site_data.apply(lambda x:score_match(x.forb_cover, "forb_score"), axis= 1)
+    """
+    Calculates summer habitat functionality score by multiplying vegetation attribute scores by their weight (as defined by weight_dict), and then adding across attributes. 
+    :param shrub: shrub cover score, as per attribute scoring curves
+    :param forb: forb cover score, as per attribute scoring curves
+    :param dforb: desirable forb cover score, as per attribute scoring curves
+    :return the combined summer score
+    """
 
-### Migration/Summer Scoring Functions
+    s_score = shrub * weight_dict['sum_shrub_wt'] + forb *  weight_dict['sum_forb_wt']+ dforb *  weight_dict['sum_des_forb_wt']
+    return s_score
 
-# # Forb Cover
-# def summerforb(perc): 
-#     if perc <= 30: 
-#         score = 0.05
-#     elif perc <= 60: 
-#         score = 0.33
-#     else: 
-#         score = 1
-#     return score
+def migration_func(shrub,forb, dforb):
 
-# #Desirable Forb
-# def desirable_forb(perc):
-#     if perc <= 25: 
-#         score = .25
-#     elif perc <= 50: 
-#         score= .50
-#     elif perc <= 75:
-#         score = .75
-#     else: 
-#         score = 1
-#     return (score)
+    """
+    Calculates migratory/transition habitat functionality score by multiplying vegetation attribute scores by their weight (as defined by weight_dict), and then adding across attributes. 
+    :param shrub: shrub cover score, as per attribute scoring curves
+    :param forb: forb cover score, as per attribute scoring curves
+    :param dforb: desirable forb cover score, as per attribute scoring curves
+    :return the combined migration habitat score
+    """
 
-# #Shrub Cover
-# def summershrub(perc): 
-#     if perc <= 15:
-#         score = 0.2
-#     elif perc <= 30: 
-#         score = 0.5
-#     elif perc <= 50: 
-#         score = 0.8
-#     elif perc <= 60:
-#         score = 1.0
-#     else: 
-#         score = 0.5
-#     return score
-
-# ########## WINTER
-
-# #Shrub Cover in non PJ-- Winter
-# def wintershrub_nonpj(perc): 
-#     if perc <= 5:
-#         score = 0.0
-#     elif perc <= 20: 
-#         score = 0.5
-#     elif perc > 20: 
-#         score = 1.0
-#     return score
-
-# ## Shrub Cover in PJ -- Winter
-# def wintershrub_pj(perc):
-#     """This function takes percent cover of all shrubs in PJ and outputs score based on scoring curves in Mule Deer Methods Doc"""
-#     if perc <= 5:
-#         score = 0.0
-#     elif perc <= 75: 
-#         score = 1.0
-#     elif perc <= 90:
-#         score = .1
-#     else: 
-#         score = 0
-#     return score
-
-# ### Preferred Shrub--Winter
-# def winterpref_shrub(perc):
-#     if perc <= 25:
-#         score = .25
-#     elif perc <= 50: 
-#         score = .5
-#     elif perc <= 75: 
-#         score = .75
-#     else: 
-#         score = 1.0 
-#     return score
-
-#Convert Percent Covers in Scores 
-
-# site_data['forb_cover_score'] = site_data['forb_cover'].map(summerforb)
-
-# site_data['d_forb_score'] = site_data['des_forb_cov'].map(desirable_forb)
-
-# site_data['shrub_cover_score'] = site_data['shrub_cover'].map(summershrub)
-
-# site_data['winter_shrub_score'] = site_data['shrub_cover'].map(wintershrub_nonpj)
-
-# site_data['winter_shrub_pj_score'] = site_data['shrub_cover'].map(wintershrub_pj)
-
-# site_data['winter_d_shrub_score'] = site_data['des_shrub_cover'].map(winterpref_shrub)
-
-##################
-### combine data
-
-##Add Weights
+    m_score = (shrub * weight_dict['mig_shrub_wt']) + (forb *  weight_dict['mig_forb_wt']) + (dforb * weight_dict['mig_des_forb_wt'])
+    return m_score
 
 
-
-weights= pd.read_excel('site_calc_weights.xlsx')
-
-for i in weights():
-    weights["veg_attribute"]= weights["weight"]
-
-# weight_dict = weights.to_dict('series')
-
-# x = {}
-# for i in weights['veg_attribute'].unique:
-#     x[i] = weights['weight']
-
-#  for key in weight_dict.keys():
-#      value= weight_dict[key]
-#      print(key, "=", value)
-
-
-for row in weights.itertuples():
-    x = weights['veg_attribute']
-    veg_attribute 
-
-def sum_migration_func(shrub,forb, dforb):
-    s_m_score = shrub * 0.5 + forb * 0.25 + dforb * 0.25
-    return s_m_score
-
-def w_func(shrub, dshrub):
-    w_score= shrub * 0.50 + dshrub * 0.50
+def winter_func(shrub, dshrub):
+    
+    """
+    Calculates winter habitat functionality score by multiplying vegetation attribute scores by their weight (as defined by weight_dict), and then adding across attributes. 
+    :param shrub: shrub cover score, as per attribute scoring curves
+    :param dshrub: desirable shrub cover score, as per attribute scoring curves
+    :return the combined winter score
+    """
+    
+    w_score= shrub * weight_dict['win_shrub_wt'] + dshrub * weight_dict['win_des_shrub_wt']
     return w_score
 
 ##add site functionality to data frame
-site_data['s_func']= site_data.apply(lambda x:sum_migration_func(x.shrub_cover_score, x.forb_cover_score, x.d_forb_score), axis= 1)
 
-site_data['m_func']= site_data.apply(lambda x:sum_migration_func(x.shrub_cover_score, x.forb_cover_score, x.d_forb_score), axis= 1)
+site_data['s_func']= site_data.apply(lambda x:sum_func(x.shrub_cover_score, x.forb_cover_score, x.d_forb_score), axis= 1)
 
-site_data['w_func']= site_data.apply(lambda x:w_func(x.winter_shrub_score, x.winter_d_shrub_score), axis= 1)
+site_data['m_func']= site_data.apply(lambda x:migration_func(x.shrub_cover_score, x.forb_cover_score, x.d_forb_score), axis= 1)
 
-site_data['w_func_pj']= site_data.apply(lambda x:w_func(x.winter_shrub_pj_score, x.winter_d_shrub_score), axis= 1)
+site_data['w_func']= site_data.apply(lambda x:winter_func(x.winter_shrub_score, x.winter_d_shrub_score), axis= 1)
+
+site_data['w_func_pj']= site_data.apply(lambda x:winter_func(x.winter_shrub_pj_score, x.winter_d_shrub_score), axis= 1)
 
 
 site_data.to_excel("func_acres_output.xlsx")
