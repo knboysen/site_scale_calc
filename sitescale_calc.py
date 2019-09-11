@@ -42,17 +42,15 @@ from collections import OrderedDict
 input_file = r'field_data_example.xlsx'
 site_data = pd.read_excel(input_file)
 
-
 #define if we are in majority PJ Habitat
 #this should be a read-in from GIS) 
 
+pj_switch = "n"
+
+site_data['pj_switch']= pj_switch
 
 ############
 #Step 2. Convert Percent Covers into Scores
-### Defining Scoring Curves
-    #there must be a better way to do this-- can I read in an scoring table? 
-
-## Instead we are trying to read in the scoring curves from a table
 
 #Psuedo Code 
     # read in table!
@@ -71,6 +69,7 @@ my_dict= OrderedDict([
     ('des_forb_score_m', 'des_forb_cov'),
     ('shrub_score_m', 'shrub_cover'),
     ('shrub_score_w', 'shrub_cover'),
+    ('shrub_score_pj_w', 'shrub_cover'),
     ('des_shrub_score_w', 'des_shrub_cover')
     ])
 
@@ -84,6 +83,7 @@ def score_match(hab_value, var_name):
     """
     return scores.loc[round(hab_value), var_name]
 
+#This loop calculates the scores for each of the map units, based on the % cover read in in the input_file
 for score, value in my_dict.items():
     site_data[score] = site_data.apply(lambda df:score_match(df[value], score), 
     axis =1)
@@ -92,6 +92,7 @@ for score, value in my_dict.items():
 #Add Weights
 #Read in Table of Vegetation Weights
 weights_df= pd.read_excel('site_calc_weights.xlsx')
+
 
 #Convert to Dictionary
 weight_dict = dict(zip(weights_df['veg_attribute'], weights_df['weight']))
@@ -137,15 +138,23 @@ def winter_func(shrub, dshrub):
     return w_score
 
 ##add site functionality to data frame
-## KB KEEP WORKING HERE- these aren't working
 
-site_data['s_func']= site_data.apply(lambda x:sum_func(x.shrub_cover_score, x.forb_cover_score, x.d_forb_score), axis= 1)
+site_data['s_func']= site_data.apply(lambda x:sum_func(x.shrub_score_s, x.forb_score_s, x.des_forb_score_s), axis= 1)
 
-site_data['m_func']= site_data.apply(lambda x:migration_func(x.shrub_cover_score, x.forb_cover_score, x.d_forb_score), axis= 1)
+site_data['m_func']= site_data.apply(lambda x:migration_func(x.shrub_score_m, x.forb_score_m, x.des_forb_score_m), axis= 1)
 
-site_data['w_func']= site_data.apply(lambda x:winter_func(x.winter_shrub_score, x.winter_d_shrub_score), axis= 1)
+def pj_function(x): 
+    if x == "n": 
+        return site_data.apply(lambda x:winter_func(x.shrub_score_w, x.des_shrub_score_w), axis= 1)
+    else: 
+        return site_data.apply(lambda x:winter_func(x.shrub_score_pj_w, x.des_shrub_score_w), axis= 1)
 
-site_data['w_func_pj']= site_data.apply(lambda x:winter_func(x.winter_shrub_pj_score, x.winter_d_shrub_score), axis= 1)
+site_data['w_func'] = pj_function(site_data["pj_switch"])
+#for index, row in site_data.iterrows():
+ #   if site_data[index, 'pj_switch'] == "n": 
+  #      site_data['w_func']= site_data.apply(lambda x:winter_func(x.shrub_score_w, x.des_shrub_score_w), axis= 1)
+   # else:
+    #    site_data['w_func']= site_data.apply(lambda x:winter_func(x.shrub_score_pj_w, x.des_shrub_score_w), axis= 1)
 
 
 site_data.to_excel("func_acres_output.xlsx")
@@ -157,5 +166,4 @@ site_data.to_excel("func_acres_output.xlsx")
 
 #######
 ## Other tasks!
-    # How do we determine PJ/non PJ for winter habitat? 
     # what are the best practices for data cleaning? 
