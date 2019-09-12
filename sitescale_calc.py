@@ -1,6 +1,6 @@
-## This is an attempt at creating a python site scale calculator
+## This  a python site scale calculator
 ## Kristen Boysen
-## Updated 21 August 2019 
+## Updated 12 Sept 2019 
 
 # Site Calculator Purpose: Using site-scale data, calculate habitat functionality
 #-	Calculate Site Data Calculate Site-Scale Score 
@@ -31,7 +31,6 @@
 
 
 
-
 import pandas as pd
 import numpy as np
 from collections import OrderedDict
@@ -45,9 +44,10 @@ site_data = pd.read_excel(input_file)
 #define if we are in majority PJ Habitat
 #this should be a read-in from GIS) 
 
-pj_switch = "n"
+#pj_switch = "n"
 
-site_data['pj_switch']= pj_switch
+#using a random generate to test the switch
+site_data['pj_switch']= np.random.choice(["y", "n"], len(site_data), p=[0.5, 0.5])
 
 ############
 #Step 2. Convert Percent Covers into Scores
@@ -139,30 +139,21 @@ def winter_func(shrub, dshrub):
 
 ##add site functionality to data frame
 
+site_data['shrub_true_w'] = np.where(site_data['pj_switch'] == "n", site_data['shrub_score_w'], site_data['shrub_score_pj_w']) #defines which shrub scoring curve to use based on majority pinyon-juniper. 
+
 site_data['s_func']= site_data.apply(lambda x:sum_func(x.shrub_score_s, x.forb_score_s, x.des_forb_score_s), axis= 1)
 
 site_data['m_func']= site_data.apply(lambda x:migration_func(x.shrub_score_m, x.forb_score_m, x.des_forb_score_m), axis= 1)
 
-def pj_function(x): 
-    if x == "n": 
-        return site_data.apply(lambda x:winter_func(x.shrub_score_w, x.des_shrub_score_w), axis= 1)
-    else: 
-        return site_data.apply(lambda x:winter_func(x.shrub_score_pj_w, x.des_shrub_score_w), axis= 1)
+site_data['w_func']= site_data.apply(lambda x:winter_func(x.shrub_true_w, x.des_shrub_score_w), axis= 1)
 
-site_data['w_func'] = pj_function(site_data["pj_switch"])
-#for index, row in site_data.iterrows():
- #   if site_data[index, 'pj_switch'] == "n": 
-  #      site_data['w_func']= site_data.apply(lambda x:winter_func(x.shrub_score_w, x.des_shrub_score_w), axis= 1)
-   # else:
-    #    site_data['w_func']= site_data.apply(lambda x:winter_func(x.shrub_score_pj_w, x.des_shrub_score_w), axis= 1)
-
+## Export to Excel
 
 site_data.to_excel("func_acres_output.xlsx")
 
 ## next steps
 # integrate modifiers 
 # call modifers from GIS? 
-
 
 #######
 ## Other tasks!
